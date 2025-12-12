@@ -1,0 +1,42 @@
+module wr_ptr_handller #(parameter PTR_WIDTH=3)(
+input  wr_clk,wr_enb,wr_rst,
+input [PTR_WIDTH:0]g_rd_ptr_sync,
+output reg [PTR_WIDTH:0]g_wr_ptr,b_wr_ptr,
+output reg full
+
+
+    );
+    
+wire [PTR_WIDTH:0] b_wr_ptr_nt;
+wire [PTR_WIDTH:0] g_wr_ptr_nt;
+wire wr_full;
+
+assign b_wr_ptr_nt = b_wr_ptr+(wr_enb & !full);  // binary write pointer increment
+assign g_wr_ptr_nt = (b_wr_ptr_nt >>1)^b_wr_ptr_nt; //  binary to gray conversion
+assign wr_full = (g_wr_ptr_nt == {~g_rd_ptr_sync[PTR_WIDTH:PTR_WIDTH-1], g_rd_ptr_sync[PTR_WIDTH-2:0]});
+
+always@(posedge wr_clk or negedge wr_rst) begin
+    if(!wr_rst) begin
+      b_wr_ptr <= 0; 
+      g_wr_ptr <= 0;
+      
+    end
+    else begin
+      b_wr_ptr <= b_wr_ptr_nt; 
+      g_wr_ptr <= g_wr_ptr_nt; 
+    end
+  end
+  
+  always@(posedge wr_clk or negedge wr_rst) begin
+    if(!wr_rst) 
+      full <= 0;
+    else        
+       full <= wr_full;
+  end
+
+
+
+endmodule
+
+  
+
