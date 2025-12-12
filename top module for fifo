@@ -1,0 +1,25 @@
+
+module fifo_topmod #(parameter DEPTH=8, DATA_WIDTH=8,PTR_WIDTH = 3)(
+input wr_clk, wr_rst,
+  input rd_clk, rd_rst,
+  input wr_enb, rd_enb,
+  input [DATA_WIDTH-1:0] din,
+  output  [DATA_WIDTH-1:0] dout,
+  output full, empty
+
+    );
+    
+wire [PTR_WIDTH:0] g_wr_ptr_sync, g_rd_ptr_sync;
+wire [PTR_WIDTH:0] b_wr_ptr, b_rd_ptr;
+wire [PTR_WIDTH:0] g_wr_ptr, g_rd_ptr;
+
+
+ff_synchronizer #(PTR_WIDTH+1) sync_rd (rd_clk, rd_rst, g_wr_ptr, g_wr_ptr_sync); 
+ff_synchronizer #(PTR_WIDTH+1) sync_wr (wr_clk, wr_rst, g_rd_ptr, g_rd_ptr_sync); 
+
+
+wr_ptr_handller #(PTR_WIDTH) wr_ptr (wr_clk, wr_enb,wr_rst,g_rd_ptr_sync,g_wr_ptr,b_wr_ptr,full);
+rd_ptr_handller #(PTR_WIDTH) rd_ptr(rd_clk, rd_rst, rd_enb,g_wr_ptr_sync,b_rd_ptr,g_rd_ptr,empty);
+fifo_memory  fifo_mem (wr_clk, wr_rst, rd_clk,rd_rst, wr_enb,rd_enb,din,b_wr_ptr, b_rd_ptr, full,empty, dout);
+
+endmodule
