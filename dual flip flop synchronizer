@@ -1,0 +1,18 @@
+module ff_synchronizer #(parameter WIDTH=3)(
+input clk, rst, 
+input [WIDTH:0] din, 
+output reg [WIDTH:0] q,dout);
+
+always@(posedge clk) begin
+    if(!rst) begin
+      q <= 0;
+      dout <= 0;
+    end
+    else begin
+      q <= din;
+      dout <= q;
+    end
+  end
+
+
+endmodule
