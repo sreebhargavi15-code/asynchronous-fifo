@@ -1,0 +1,56 @@
+module fifo_tb;
+parameter DATA_WIDTH = 8;
+reg wr_clk, wr_rst;
+reg rd_clk,rd_rst;
+reg wr_enb, rd_enb;
+reg [DATA_WIDTH-1:0] din;
+wire [DATA_WIDTH-1:0] dout;
+wire full, empty;
+
+fifo_topmod  dut(wr_clk,wr_rst,rd_clk,rd_rst,wr_enb,rd_enb,din,dout,full,empty);
+
+initial begin
+wr_clk=0;
+rd_clk=0;
+wr_enb=0;
+rd_enb=0;
+end
+ 
+ 
+always #5  wr_clk = ~wr_clk;  
+always #7  rd_clk = ~rd_clk;  
+ 
+initial begin
+wr_rst=0; 
+rd_rst=0;
+#50;
+wr_rst=1; 
+rd_rst=1;
+
+repeat(8) begin
+      
+@(posedge wr_clk);
+
+ wr_enb = 1;
+ din = $random % 100;
+end
+@(posedge wr_clk) 
+wr_enb = 0;
+
+#30;
+
+repeat(8) begin
+@(posedge rd_clk);
+ rd_enb = 1;
+end
+@(posedge rd_clk) 
+rd_enb = 0;
+
+#50 ;
+
+$finish;
+  end
+
+
+   
+endmodule
