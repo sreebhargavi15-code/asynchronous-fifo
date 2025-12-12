@@ -1,0 +1,36 @@
+module rd_ptr_handller #(parameter PTR_WIDTH=3)(
+input rd_clk, rd_rst, rd_enb,
+  input [PTR_WIDTH:0] g_wr_ptr_sync,
+  output reg [PTR_WIDTH:0] b_rd_ptr, g_rd_ptr,
+  output reg empty
+    );
+
+wire [PTR_WIDTH:0] b_rd_ptr_nt;
+wire [PTR_WIDTH:0] g_rd_ptr_nt;
+wire rd_empty;
+
+assign b_rd_ptr_nt = b_rd_ptr+(rd_enb & !empty); // read pointer increment
+assign g_rd_ptr_nt = (b_rd_ptr_nt >>1)^b_rd_ptr_nt; // binary to gray conversion
+assign rd_empty = (g_wr_ptr_sync == g_rd_ptr_nt); 
+  
+always@(posedge rd_clk or negedge rd_rst) begin
+    if(!rd_rst) begin
+      b_rd_ptr <= 0;
+      g_rd_ptr <= 0;
+    end
+    else begin
+      b_rd_ptr <= b_rd_ptr_nt;
+      g_rd_ptr <= g_rd_ptr_nt;
+    end
+  end
+  
+  always@(posedge rd_clk or negedge rd_rst) begin
+    if(!rd_rst) 
+       empty <= 1'b1;
+    else        
+       empty <= rd_empty;
+  end
+ 
+
+endmodule
+
